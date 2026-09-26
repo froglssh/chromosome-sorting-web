@@ -66,7 +66,7 @@ sub,sup{line-height:0}
 .legend{display:flex;gap:15px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;color:var(--ink-3)}
 .legend i{display:inline-block;width:22px;height:8px;border-radius:2px;margin-right:5px;vertical-align:1px}
 
-main{padding-block:18px 116px}
+main{padding-block:8px 75px}
 .grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;align-items:start}
 @media (max-width:880px){.grid{grid-template-columns:1fr}}
 .grid.solo{grid-template-columns:minmax(0,1fr);max-width:860px;margin-inline:auto}
@@ -338,6 +338,177 @@ button.row:hover{border-color:var(--accent);background:var(--accent-soft);transf
   .free-nav{width:100%;justify-content:space-between}
   .free-nav select{flex:1}
   .barmsg{width:100%;text-align:center;order:-1}
+}
+
+
+/* 排序題（Order）候選圖與目標槽尺寸優化 - 精巧一屏無捲動版 */
+.grid.solo{
+  max-width:800px;
+}
+.grid.solo .panel{
+  padding:10px 16px;
+}
+.grid.solo .stagehead{
+  margin-bottom:4px;
+  padding-bottom:4px;
+}
+.grid.solo .stagehead h2{
+  font-size:19px;
+  margin:0;
+}
+.grid.solo .sub{
+  font-size:13px;
+  margin:0;
+}
+.grid.solo .qlabel{
+  font-size:11px;
+  margin-bottom:1px;
+}
+.grid.solo .q{
+  font-size:16px;
+  margin-bottom:2px;
+}
+.grid.solo .qhint{
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.slots{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-block:3px 6px;
+  flex-wrap:nowrap;
+}
+.oslot{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  aspect-ratio:260 / 338;
+  width:clamp(48px, 8.5vw, 68px);
+  height:clamp(62px, 11vw, 88px);
+  background:var(--surface-2);
+  border:2px dashed var(--line);
+  border-radius:6px;
+  padding:2px;
+  cursor:pointer;
+  transition:all .18s ease;
+  overflow:hidden;
+  box-sizing:border-box;
+  flex:0 0 auto;
+}
+.oslot:hover{
+  border-color:var(--accent);
+  background:var(--accent-soft);
+}
+.oslot.has{
+  border-style:solid;
+  border-color:var(--accent);
+  background:var(--surface);
+  box-shadow:0 2px 5px rgba(0,0,0,.08);
+}
+.oslot .ordnum{
+  font-family:var(--mono);
+  font-size:17px;
+  font-weight:700;
+  color:var(--ink-3);
+  opacity:.5;
+}
+.oslot.has::after{
+  content:"✕ 移除";
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  background:rgba(20,16,10,.85);
+  color:#fff;
+  font-size:9.5px;
+  padding:1px 0;
+  text-align:center;
+  opacity:0;
+  transition:opacity .15s;
+  pointer-events:none;
+}
+.oslot.has:hover::after{
+  opacity:1;
+}
+
+.pool{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:3px;
+  flex-wrap:nowrap;
+}
+.pcard{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  aspect-ratio:260 / 338;
+  width:clamp(48px, 8.5vw, 68px);
+  height:clamp(62px, 11vw, 88px);
+  background:var(--surface);
+  border:1.8px solid var(--line);
+  border-radius:6px;
+  padding:2px;
+  cursor:pointer;
+  transition:all .18s ease;
+  overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+  box-sizing:border-box;
+  flex:0 0 auto;
+}
+.pcard:hover:not(:disabled){
+  border-color:var(--accent);
+  transform:translateY(-2px) scale(1.22);
+  box-shadow:0 8px 20px rgba(14,124,116,.36);
+  z-index:20;
+}
+.pcard.used{
+  opacity:.18;
+  border-style:dashed;
+  border-color:var(--line);
+  cursor:default;
+  transform:none!important;
+  box-shadow:none!important;
+  filter:grayscale(1);
+}
+.pcard img, .oslot img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:4px;
+  pointer-events:none;
+}
+.slot-badge{
+  position:absolute;
+  top:2px;
+  left:2px;
+  z-index:2;
+  font-family:var(--mono);
+  font-size:9.5px;
+  font-weight:700;
+  background:var(--ink);
+  color:var(--surface);
+  padding:0px 4px;
+  border-radius:3px;
+  line-height:1.2;
+}
+
+@media (max-width:580px){
+  .slots, .pool{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:6px;
+  }
+  .oslot, .pcard{
+    width:100%;
+    height:auto;
+  }
 }
 
 </style>
@@ -912,20 +1083,20 @@ function drawOrder(s){
   const slots=s.items.map((it,i)=>{
     const filled=seqv[i]!=null;
     const body=s.imgs
-      ?(filled?`<img src="${IMG[s.items[seqv[i]]]}" alt="已選圖" style="width:100%;height:100%;object-fit:contain;border-radius:4px">`:`<span class="ordnum">${i+1}</span>`)
-      :(filled?`<b>${s.items[seqv[i]]}</b>`:`<span class="ordnum">${i+1}</span>`);
-    return `<button class="oslot ${filled?'has':''}" data-i="${i}">${body}</button>`;
+      ?(filled?`<span class="slot-badge">${i+1}</span><img src="${IMG[s.items[seqv[i]]]}" alt="已選圖">`:`<span class="ordnum">${i+1}</span>`)
+      :(filled?`<span class="slot-badge">${i+1}</span><b>${s.items[seqv[i]]}</b>`:`<span class="ordnum">${i+1}</span>`);
+    return `<button class="oslot ${filled?'has':''}" data-i="${i}" title="${filled?'點擊移除此項目':'待填入位置 '+(i+1)}">${body}</button>`;
   }).join('');
   const available=s.items.map((it,i)=>({it,i})).filter(x=>!seqv.includes(x.i));
   const pool=s._perm||(s._perm=shuffleArr(s.items.map((it,i)=>i)));
   const poolHtml=pool.map(origIdx=>{
     const used=seqv.includes(origIdx);
     const body=s.imgs
-      ?`<img src="${IMG[s.items[origIdx]]}" alt="備選圖" style="width:100%;height:100%;object-fit:contain;border-radius:4px">`
+      ?`<img src="${IMG[s.items[origIdx]]}" alt="備選圖">`
       :`<span>${s.items[origIdx]}</span>`;
-    return `<button class="pcard ${used?'used':''}" data-orig="${origIdx}" ${used?'disabled':''}>${body}</button>`;
+    return `<button class="pcard ${used?'used':''}" data-orig="${origIdx}" ${used?'disabled':''} title="${used?'已放入序列':'點選放入第 '+(seqv.length+1)+' 個位置'}">${body}</button>`;
   }).join('');
-  box.innerHTML=`<div class="slots">${slots}</div><div class="qlabel" style="margin-top:14px">點選下方項目放入順序：</div><div class="pool">${poolHtml}</div>`;
+  box.innerHTML=`<div class="slots ${s.imgs?'img-slots':''}">${slots}</div><div class="qlabel" style="margin-top:14px">點選下方候選圖放入順序（1 → 6）：</div><div class="pool ${s.imgs?'img-pool':''}">${poolHtml}</div>`;
   box.querySelectorAll('.pcard').forEach(b=>{
     b.onclick=()=>{if(b.disabled)return;const oi=+b.dataset.orig;seqv.push(oi);drawOrder(s);saveDraft();};
   });
