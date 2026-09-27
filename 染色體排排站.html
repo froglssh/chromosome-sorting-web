@@ -935,13 +935,16 @@ function saveDraft(){
   const s=STAGES[ST.idx];
   if(!s||answered) return;
   ST.drafts=ST.drafts||{};
-  if(s.kind==='drag') ST.drafts[ST.idx]={place:Object.assign({},place)};
-  else if(s.kind==='order') ST.drafts[ST.idx]={seqv:seqv.slice()};
-  else if(s.kind==='fill') ST.drafts[ST.idx]={fillv:Object.assign({},fillv)};
-  else if(s.kind==='grid') ST.drafts[ST.idx]={gridv:Object.assign({},gridv)};
-  else if(s.kind==='tf') ST.drafts[ST.idx]={tfv:Object.assign({},tfv)};
-  else if(s.kind==='match') ST.drafts[ST.idx]={matchv:Object.assign({},matchv)};
-  else if(s.opts) ST.drafts[ST.idx]={pick:Array.from(pick)};
+  let d=null;
+  if(s.kind==='drag'&&Object.keys(place).length) d={place:Object.assign({},place)};
+  else if(s.kind==='order'&&seqv.length) d={seqv:seqv.slice()};
+  else if(s.kind==='fill'&&Object.keys(fillv).length) d={fillv:Object.assign({},fillv)};
+  else if(s.kind==='grid'&&Object.keys(gridv).length) d={gridv:Object.assign({},gridv)};
+  else if(s.kind==='tf'&&Object.keys(tfv).length) d={tfv:Object.assign({},tfv)};
+  else if(s.kind==='match'&&Object.keys(matchv).length) d={matchv:Object.assign({},matchv)};
+  else if(s.kind==='hot'&&(hotStep||hotMarks.length)) d={hotStep,hotMarks:hotMarks.slice()};
+  else if(s.opts&&pick.size) d={pick:Array.from(pick)};
+  if(d) ST.drafts[ST.idx]=d; else delete ST.drafts[ST.idx];
   save();
 }
 
@@ -953,7 +956,7 @@ function drawTrack(){
       const isPassed=ST.passed&&ST.passed[i];
       const tries=ST.tries[i];
       const hasDraft=ST.drafts&&ST.drafts[i];
-      const statusIcon=isPassed?'✓':(tries!=null||hasDraft?'✎':'•');
+    const statusIcon=isPassed?'✓':(tries>0||hasDraft?'✎':'•');
       return `<option value="${i}" ${i===ST.idx?'selected':''}>${String(i+1).padStart(2,'0')}. [${statusIcon}] ${s.t} (${KSHORT[s.kind]||''})</option>`;
     }).join('');
   }
@@ -964,7 +967,7 @@ function drawTrack(){
     let cls='';
     if(i===ST.idx&&!ST.done) cls='now';
     else if(isPassed) cls='done';
-    else if(t!=null||hasDraft) cls='attempted';
+    else if(t>0||hasDraft) cls='attempted';
     return `<div class="tseg ${cls}" data-g="${s.g}" data-idx="${i}" data-tries="${t==null?'':Math.min(t,3)}" title="點擊跳至第 ${i+1} 關：${s.t}">${i+1}</div>`;
   }).join('');
   document.querySelectorAll('.tseg').forEach(seg=>{
@@ -1001,13 +1004,15 @@ function renderBoard(s){
     el('stagecard').classList.remove('hidden');el('grid').classList.remove('solo');
     b.setAttribute('viewBox',`0 0 600 ${s.sceneH}`);b.classList.add('hot');
     b.innerHTML=`${s.scene()}<g id="marks"></g>`;
-    hotStep=0;hotMarks=[];renderHotSteps(s);el('st-note').textContent=s.note||'在圖上點出正確位置';return;
+    const draft=(ST.drafts&&ST.drafts[ST.idx])||{};
+    hotStep=draft.hotStep||0;hotMarks=Array.isArray(draft.hotMarks)?draft.hotMarks.slice():[];
+    drawHotMarks();renderHotSteps(s);el('st-note').textContent=s.note||'在圖上點出正確位置';return;
   }
   if(s.kind!=='drag'){el('stagecard').classList.add('hidden');el('grid').classList.add('solo');return;}
   el('stagecard').classList.remove('hidden');el('grid').classList.remove('solo');
   order=s.shuffle?shuffleArr(s.pieces):s.pieces.slice();
   const T=trayLayout(s);layout=T.L;b.setAttribute('viewBox',`0 0 600 ${T.H}`);
-  const slotSvg=s.slots.map(sl=>`<g class="slotg" data-slot="${sl.id}"><rect class="slot" x="${sl.x-sl.w/2}" y="${sl.y-sl.h/2}" width="${sl.w}" height="${sl.h}" rx="7" fill="${PAPER}" stroke="${TEAL}" stroke-width="1.8" stroke-dasharray="4 3" opacity=".9"/><text x="${sl.x}" y="${sl.y+4}" text-anchor="middle" font-size="12" fill="${TEAL}" opacity=".7">${sl.label||'貼這裡'}</text></g>`).join('');
+  const slotSvg=s.slots.map(sl=>`<g class="slotg" data-slot="${sl.id}" tabindex="0" role="button" aria-label="${escapeHTML(sl.label||'貼標籤位置')}，按 Enter 或空白鍵放置選取標籤"><rect class="slot" x="${sl.x-sl.w/2}" y="${sl.y-sl.h/2}" width="${sl.w}" height="${sl.h}" rx="7" fill="${PAPER}" stroke="${TEAL}" stroke-width="1.8" stroke-dasharray="4 3" opacity=".9"/><text x="${sl.x}" y="${sl.y+4}" text-anchor="middle" font-size="12" fill="${TEAL}" opacity=".7">${sl.label||'貼這裡'}</text></g>`).join('');
   const pieceSvg=s.pieces.map(p=>`<g class="piece" id="p-${p.id}" data-piece="${p.id}" tabindex="0" role="button" aria-label="${p.label}">${pieceSVG(p)}</g>`).join('');
   b.innerHTML=`${s.scene()}${slotSvg}<g id="pieces-layer">${pieceSvg}</g>`;
   el('st-note').textContent=s.note||'可拖曳或點選放置';syncBoard();
@@ -1078,24 +1083,35 @@ function renderHotSteps(s){
   const st=s.steps[hotStep];
   if(!st){pass(s);return;}
   el('q-text').innerHTML=`<b>步驟 ${hotStep+1}/${s.steps.length}</b>：${st.q}`;
-  el('q-hint').textContent='在左側大圖上直接點選那一格細胞。';
+  el('q-hint').textContent='在圖上點選，或使用下方鍵盤／觸控按鈕選擇細胞位置。';
+  const cells=['上排第 1 格','上排第 2 格','上排第 3 格','上排第 4 格','下排第 1 格','下排第 2 格','下排第 3 格','下排第 4 格'];
+  const coords=[[19,33],[41,33],[62,33],[82,33],[19,69],[41,69],[64,69],[83,69]];
   el('q-opts').innerHTML=`<div class="opts">${s.steps.map((x,i)=>`<div class="opt ${i<hotStep?'right':i===hotStep?'sel':''}">
-    <span class="k">${i+1}</span><div>${x.lbl}</div></div>`).join('')}</div>`;
+    <span class="k">${i+1}</span><div>${x.lbl}</div></div>`).join('')}</div><div class="hot-choices" role="group" aria-label="選擇細胞位置" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">${cells.map((label,i)=>`<button type="button" class="btn ghost small hot-choice" data-hot="${i}" aria-label="選擇${label}">${label}</button>`).join('')}</div>`;
+  el('q-opts').querySelectorAll('.hot-choice').forEach(b=>b.onclick=()=>{const xy=coords[+b.dataset.hot];if(xy)answerHotAt(xy[0]*6,xy[1]*ht(s.hotImg,600)/100);});
+}
+function drawHotMarks(){
+  const mk=el('marks');if(!mk)return;mk.innerHTML='';
+  hotMarks.forEach(m=>mk.insertAdjacentHTML('beforeend',`<circle cx="${m.x}" cy="${m.y}" r="11" fill="${TEAL}" fill-opacity=".9" stroke="#fff" stroke-width="3"/><rect x="${m.x-54}" y="${m.y-42}" width="108" height="26" rx="13" fill="${TEAL}"/>`+txt(m.x,m.y-25,m.lbl,{fs:14,c:'#fff'})));
 }
 function hotClick(e){
   const s=STAGES[ST.idx];if(answered||!s||s.kind!=='hot')return;
-  const[x,y]=ptBoard(e);const H=ht(s.hotImg,600);
+  const[x,y]=ptBoard(e);
+  answerHotAt(x,y);
+}
+function answerHotAt(x,y){
+  const s=STAGES[ST.idx];if(answered||!s||s.kind!=='hot')return;
+  const H=ht(s.hotImg,600);
   const px=x/6,py=y/H*100;
   const reg=s.region(px,py);const st=s.steps[hotStep];if(!st)return;
-  ST.tries[ST.idx]=(ST.tries[ST.idx]||0)+1;
   const mk=el('marks');
   if(reg===st.want){
-    mk.insertAdjacentHTML('beforeend',`<circle cx="${x}" cy="${y}" r="11" fill="${TEAL}" fill-opacity=".9" stroke="#fff" stroke-width="3"/>`+
-      `<rect x="${x-54}" y="${y-42}" width="108" height="26" rx="13" fill="${TEAL}"/>`+txt(x,y-25,st.lbl,{fs:14,c:'#fff'}));
+    hotMarks.push({x,y,lbl:st.lbl});drawHotMarks();
     hotStep++;
     if(hotStep>=s.steps.length){pass(s);}
-    else{renderHotSteps(s);el('q-fb').innerHTML=`<div class="fb ok"><h4>✓ 找到了</h4><p>${st.ok||''}</p></div>`;}
+    else{renderHotSteps(s);el('q-fb').innerHTML=`<div class="fb ok"><h4>✓ 找到了</h4><p>${st.ok||''}</p></div>`;saveDraft();}
   }else{
+    ST.tries[ST.idx]=(ST.tries[ST.idx]||0)+1;
     mk.insertAdjacentHTML('beforeend',`<circle cx="${x}" cy="${y}" r="8" fill="${INK}" fill-opacity=".5" stroke="#fff" stroke-width="2"/>`);
     const msg=s.miss[reg]||'不對喔，再看清楚一點。';
     if(ST.tries[ST.idx]>=REVEAL_N){revealHot(s);return;}
@@ -1179,7 +1195,8 @@ function drawGrid(s){
       const k=ri+'_'+ci,v=gridv[k];
       const glyph=v==null?'':v===1?'✓':'✗';
       const cls=v==null?'':v===1?'yes':'no';
-      h+=`<td><button class="gbtn ${cls}" data-k="${k}">${glyph}</button></td>`;
+       const state=v==null?'未選':v===1?'已勾選':'已打叉';
+       h+=`<td><button class="gbtn ${cls}" data-k="${k}" aria-label="${escapeHTML(r[0])}；${escapeHTML(s.cols[ci])}；${state}；按一下切換判斷">${glyph}</button></td>`;
     });
     h+=`</tr>`;
   });
@@ -1202,8 +1219,8 @@ function drawTF(s,reveals){
     return `<div class="tfitem">
       <div class="tftext">${it[0]}${isRev?`<div class="tfexp" style="color:var(--accent);font-size:13.5px;margin-top:4px">${it[3]}</div>`:''}</div>
       <div class="tfbtns">
-        <button class="tfb ${val===true?'t':''}" data-i="${i}" data-v="1">○</button>
-        <button class="tfb ${val===false?'f':''}" data-i="${i}" data-v="0">✕</button>
+        <button class="tfb ${val===true?'t':''}" data-i="${i}" data-v="1" aria-label="第 ${i+1} 項：正確" aria-pressed="${val===true}">○</button>
+        <button class="tfb ${val===false?'f':''}" data-i="${i}" data-v="0" aria-label="第 ${i+1} 項：錯誤" aria-pressed="${val===false}">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -1273,6 +1290,8 @@ function show(i){
 
 function addTags(t){(t||[]).forEach(x=>{ST.tags[x]=(ST.tags[x]||0)+1})}
 function pass(s,rev){
+  const wasPassed=!!(ST.passed&&ST.passed[ST.idx]);
+  if(!rev&&!wasPassed) ST.tries[ST.idx]=(ST.tries[ST.idx]||0)+1;
   answered=true;ST.passed=ST.passed||{};ST.passed[ST.idx]=true;
   if(ST.drafts) delete ST.drafts[ST.idx];
   if(rev){ST.revealed=ST.revealed||{};ST.revealed[ST.idx]=true;}
@@ -1309,6 +1328,13 @@ function revealHot(s){
 
 function check(){
   const s=STAGES[ST.idx];if(answered||s.kind==='hot')return;let r;
+  let missingMsg='';
+  if(s.kind==='drag'&&s.slots.some(sl=>!place[sl.id])) missingMsg='請先把所有標籤放到圖中的位置。';
+  else if(s.kind==='order'&&seqv.length<s.items.length) missingMsg=`還有 ${s.items.length-seqv.length} 個位置沒填好。`;
+  else if(s.kind==='fill'){const n=blanksOf(s).filter(b=>!fillv[b.key]).length;if(n)missingMsg=`還有 ${n} 個空格沒填。`;}
+  else if(s.kind==='grid'){let n=0;s.rows.forEach((r,ri)=>s.cols.forEach((c,ci)=>{if(gridv[ri+'_'+ci]==null)n++;}));if(n)missingMsg=`還有 ${n} 格未填（點一下打勾、點兩下打叉）。`;}
+  else if(s.kind==='tf'){const n=s.items.filter((it,i)=>tfv[i]==null).length;if(n)missingMsg=`還有 ${n} 題未作答。`;}
+  if(missingMsg){el('q-fb').innerHTML=`<div class="fb no"><h4>還沒填完</h4><p>${missingMsg}</p></div>`;saveDraft();return;}
   if(s.kind==='drag'){const sm={};s.pieces.forEach(p=>sm[p.id]=p);const m={};Object.keys(place).forEach(k=>m[k]=sm[place[k]]);r=s.check(m);}
   else if(s.kind==='order'){
     if(seqv.length<s.items.length)r={ok:false,msg:`還有 ${s.items.length-seqv.length} 個位置沒填好。`,tags:[]};
@@ -1371,8 +1397,7 @@ function finish(){
   const one=tr.filter((t,i)=>(ST.passed&&ST.passed[i])&&t===1).length;
   const two=tr.filter((t,i)=>(ST.passed&&ST.passed[i])&&t===2).length;
   const hard=tr.filter((t,i)=>(ST.passed&&ST.passed[i])&&t>=3).length;
-  const passedCount=Object.keys(ST.passed||{}).length;
-  const skippedCount=STAGES.length-passedCount;
+  const passedCount=Object.values(ST.passed||{}).filter(Boolean).length;
   const w=ST.who||{};
   const RV=ST.revealed||{};
   const rows=STAGES.map((s,i)=>{
@@ -1397,7 +1422,7 @@ function finish(){
   const miss=mk.length?mk.map(k=>`<div class="mi"><b>${TAGS[k]?TAGS[k][0]:k}　<span>觸發 ${ST.tags[k]} 次</span></b>${TAGS[k]?TAGS[k][1]:''}<br><span>回頭看：${TAGS[k]?TAGS[k][2]:''}</span></div>`).join('')
     :`<div class="clean">沒有觸發任何迷思概念——每一關的判斷都一次到位。</div>`;
   el('done').innerHTML=`<div class="card2"><h1>染色體排排站　學習診斷卡</h1>
-    <p class="who">${w.n||'（未填姓名）'}　|　${w.c||'—'} 班　${w.s?'座號 '+w.s:''}　|　${new Date().toLocaleDateString('zh-TW')}　|　用時約 ${mins} 分鐘</p>
+     <p class="who">${escapeHTML(w.n||'（未填姓名）')}　|　${escapeHTML(w.c||'—')} 班　${w.s?'座號 '+escapeHTML(w.s):''}　|　${new Date().toLocaleDateString('zh-TW')}　|　用時約 ${mins} 分鐘</p>
     <div class="stats">
       <div class="stat"><div class="v" style="color:var(--ok)">${one}</div><div class="l">一次過關</div></div>
       <div class="stat"><div class="v" style="color:var(--warn)">${two}</div><div class="l">試了 2 次</div></div>
@@ -1416,6 +1441,7 @@ function finish(){
     btn.onclick=()=>{
       const target=parseInt(btn.dataset.stage,10);
       if(!isNaN(target)){
+        delete ST.passed[target];if(ST.revealed)delete ST.revealed[target];if(ST.drafts)delete ST.drafts[target];ST.done=false;save();
         el('done').classList.add('hidden');
         ['play','topbar','bar'].forEach(x=>el(x).classList.remove('hidden'));
         show(target);
@@ -1491,14 +1517,22 @@ el('question-select').onchange=(e)=>{
 const B=el('board');
 B.addEventListener('pointerdown',onDown);B.addEventListener('pointermove',onMove);B.addEventListener('pointerup',onUp);B.addEventListener('pointercancel',onUp);
 B.addEventListener('click',hotClick);
-B.addEventListener('keydown',e=>{const g=e.target.closest&&e.target.closest('.piece');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();sel=(sel===g.dataset.piece?null:g.dataset.piece);syncBoard();}});
+B.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){sel=null;syncBoard();return;}
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const g=e.target.closest&&e.target.closest('.piece');
+  if(g){e.preventDefault();sel=(sel===g.dataset.piece?null:g.dataset.piece);syncBoard();return;}
+  const slot=e.target.closest&&e.target.closest('.slotg');
+  if(slot&&sel){e.preventDefault();const slId=slot.dataset.slot,oldSl=Object.keys(place).find(k=>place[k]===sel);if(oldSl)delete place[oldSl];const occ=place[slId];if(occ&&occ!==sel){if(oldSl)place[oldSl]=occ;else delete place[slId];}place[slId]=sel;sel=null;syncBoard();saveDraft();}
+});
 el('heroimg').innerHTML=`<img src="${IMG.eA}" alt="課本 P34 圖1-23 減數分裂第一階段">`;
 window.addEventListener('pagehide',saveDraft);
 window.addEventListener('beforeunload',saveDraft);
 
 (function boot(){
   const saved=load();
-  if(saved&&!saved.done&&(saved.idx>0||Object.keys(saved.tries||{}).length||Object.keys(saved.drafts||{}).length)){
+  if(saved&&saved.done){ST=Object.assign(ST,saved);el('f-name').value=ST.who.n||'';el('f-cls').value=ST.who.c||'';el('f-no').value=ST.who.s||'';finish();}
+  else if(saved&&(saved.idx>0||Object.keys(saved.tries||{}).length||Object.keys(saved.drafts||{}).length)){
     ST=Object.assign(ST,saved);el('f-name').value=ST.who.n||'';el('f-cls').value=ST.who.c||'';el('f-no').value=ST.who.s||'';
     el('go').textContent=`繼續闖關（第 ${ST.idx+1} 關）`;}
 })();
