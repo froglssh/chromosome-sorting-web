@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>染色體排排站｜優化版</title>
+<title>染色體排排站｜完整優化版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -229,6 +229,8 @@ figcaption{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:
 .dots button.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .replay{align-self:flex-end;background:#fff;border:1.5px solid #CFC3AE;color:#5A4C3C;border-radius:999px;font-size:13px;padding:3px 12px;cursor:pointer}
 .lfig .cap{font-family:var(--mono);font-size:12px;color:#877865;text-align:center;line-height:1.5}
+.diff-flow{display:grid;grid-template-columns:minmax(100px,.8fr) minmax(100px,1fr) minmax(150px,1.2fr);align-items:center;gap:12px;padding:20px 12px;background:linear-gradient(135deg,#f6f4ea,#e8f2ee);border:1px solid var(--line);border-radius:14px;color:#2A2118}.diff-node{display:grid;gap:5px;justify-items:center;padding:15px 10px;border:1.5px solid #8ab1a8;border-radius:12px;background:#fff;text-align:center}.diff-node b{font-family:var(--serif);font-size:18px}.diff-node span,.diff-stem span{font-size:13px;line-height:1.5;color:#5A4C3C}.diff-flow>i{font-style:normal;text-align:center;font-size:14px;font-weight:700;color:#0E7C74}.diff-branches{display:grid;gap:8px}.diff-stem{display:flex;gap:10px;align-items:center;margin-top:10px;padding:12px 15px;border-left:4px solid #4E8A2E;border-radius:8px;background:#e4f0da;color:#2A2118}.diff-stem b{white-space:nowrap}.diff-stem span{font-size:14px}
+@media(max-width:560px){.diff-flow{grid-template-columns:1fr}.diff-flow>i{padding:2px}.diff-branches{grid-template-columns:1fr 1fr}}
 /* 動畫舞台 */
 .ani{position:relative;width:100%;background:#fff;border-radius:8px;overflow:hidden}
 .ani img.base{width:100%}
@@ -524,7 +526,7 @@ button.row:hover{border-color:var(--accent);background:var(--accent-soft);transf
 
 <header class="topbar hidden" id="topbar"><div class="wrap topin">
   <div class="tprow">
-    <span class="brand">染色體排排站 <span class="version">v2.0 旗艦優化版</span></span>
+    <span class="brand">染色體排排站 <span class="version">v3.0 完整優化版</span></span>
     <span class="crumb" id="crumb"></span>
     <button class="linkbtn" id="to-learn">💡 重點圖解</button>
   </div>
@@ -541,14 +543,14 @@ button.row:hover{border-color:var(--accent);background:var(--accent-soft);transf
   <section id="intro">
     <div class="hero">
       <h1>染色體排排站</h1>
-      <p class="lede">讀完課本 P31–P38 和「有絲分裂與減數分裂」簡報之後，換你來當那顆細胞：染色體什麼時候複製、什麼時候排在中央、分開的是姊妹染色分體還是同源染色體？</p>
+      <p class="lede">讀完課本 P31–P39 和「有絲分裂與減數分裂」簡報之後，換你來當那顆細胞：染色體什麼時候複製、什麼時候排在中央、分開的是姊妹染色分體還是同源染色體？</p>
       <div class="heroimg" id="heroimg"></div>
       <ul class="rules">
-        <li><span class="n">1</span><span>建議先看 <b>💡 重點圖解</b>（12 張精選圖卡，取自課本與簡報，內建 <b>有絲分裂與減數分裂動畫</b>），再進入 <b>8 道挑戰關卡</b>。</span></li>
+        <li><span class="n">1</span><span>建議先看 <b>💡 重點圖解</b>（13 張精選圖卡，取自課本與簡報，內建 <b>有絲分裂與減數分裂動畫</b>），再進入 <b>10 道挑戰關卡</b>。</span></li>
         <li><span class="n">2</span><span>題目涵蓋多元互動形式：<b>圖片排序、拖曳貼標籤、點圖找位置、數目填空、比較表勾選、是非快答</b>。</span></li>
-        <li><span class="n">3</span><span><b>自由選題與即時草稿</b>：可隨時點擊頂部進度軌或底部選單切換題目，遇到難題可先「跳過」，未送出的作答草稿會自動保存。</span></li>
+        <li><span class="n">3</span><span><b>自由選題與即時草稿</b>：可隨時點擊頂部進度軌或底部選單切換題目，可跳題、選擇題號、先跳過難題，作答草稿會自動保存。</span></li>
         <li><span class="n">4</span><span>作答時若卡關，隨時點擊右上角「💡 重點圖解」查閱該題相關概念，閱畢點擊「回到剛才的題目」即可無縫返回繼續作答。</span></li>
-        <li><span class="n">5</span><span>答錯不中斷，答錯 <b>5 次</b> 會自動顯示答案與完整解析；完成後產出 <b>多維度能力診斷卡</b>，點擊診斷卡各題即可快速重測。</span></li>
+        <li><span class="n">5</span><span>答錯不中斷，答錯 <b>5 次</b> 會自動顯示答案與完整解析；完成後產出 <b>學習診斷卡</b>，點擊診斷卡各題即可快速重測。</span></li>
       </ul>
       <div class="fields">
         <div class="field"><label for="f-name">姓名</label><input id="f-name" type="text" autocomplete="off" placeholder="王小明"></div>
@@ -595,7 +597,7 @@ button.row:hover{border-color:var(--accent);background:var(--accent-soft);transf
 
 <div class="bar hidden" id="bar"><div class="barin">
   <div class="free-nav">
-    <label for="question-select">快速跳題</label>
+    <label for="question-select">選題／跳題</label>
     <select id="question-select" aria-label="選擇題目"></select>
   </div>
   <span class="barmsg" id="barmsg"></span>
@@ -622,7 +624,9 @@ const TAGS={
  D6:['套數與數目的變化','有絲分裂 2n → 2n；減數分裂第一階段後就變成 n，第二階段開始前染色體不再複製。','課本 P34–35；簡報 p26、p41'],
  D7:['動物與植物的細胞質分裂','動物細胞：細胞膜向內凹陷；植物細胞：高基氏體的囊泡在中央融合成細胞板，形成新的細胞膜與細胞壁。','課本 P36 圖1-24、1-25；簡報 p23–p25'],
  D8:['精子與卵的形成','一個初級精母細胞（2n）→ 4 個精子（n）；一個初級卵母細胞（2n）→ 1 個卵（n）＋極體，極體最後退化。','課本 P37–38 圖1-26、1-27'],
- D9:['非同源染色體自由組合','減數分裂第一階段四分體的排列方式不只一種，非同源染色體自由組合，使子細胞的染色體組合不同。','課本 P34、P36 腦力激盪；簡報 p42–p43']
+ D9:['非同源染色體自由組合','減數分裂第一階段四分體的排列方式不只一種，非同源染色體自由組合，使子細胞的染色體組合不同。','課本 P34、P36 腦力激盪；簡報 p42–p43'],
+ D10:['細胞分化與基因表現','體細胞大致具有相同遺傳物質，但不同細胞表現的特定基因不同，因此形成不同形態與功能。','課本 P38–39 圖1-28；圖解簡報 p54–p56'],
+ D11:['染色體套數與 DNA 含量','染色體複製會使 DNA 含量加倍，但不會立即改變染色體套數；減數分裂Ⅰ後套數減半，Ⅱ前不再複製。','課本 P34–35；圖解簡報 p39–p44、p61–p64']
 };
 
 /* ── 共用小工具 ── */
@@ -632,6 +636,8 @@ const ht=(k,w)=>w*DIM[k][1]/DIM[k][0];
 const txt=(x,y,s,o={})=>`<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" font-size="${o.fs||16}" font-weight="${o.fw||600}" fill="${o.c||INK}" ${o.x||''}>${s}</text>`;
 const bin=(x,y,w,h,label,c,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="${c}" stroke-width="1.8"/>`+txt(x+12,y+24,label,{a:'start',fs:16,c});
 const R=(src,cap)=>({src,cap});
+const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const refHTML=refs=>{const items=(refs||[]).filter(r=>IMG[r.src]).map(r=>`<figure><img src="${IMG[r.src]}" alt="${escapeHTML(r.cap)}"><figcaption>${escapeHTML(r.cap)}</figcaption></figure>`);return items.length?`<div class="refs">${items.join('')}</div>`:'';};
 const S=(id,x,y,w,h,group)=>({id,x,y,w,h,group});
 const LBL=(id,label,w=104,h=36,fs)=>({id,label,w,h,fs});
 const byGroup=(m,g)=>Object.entries(m).filter(([k,v])=>v&&SLOTG[k]===g).map(([k,v])=>v);
@@ -661,7 +667,7 @@ function flipStart(){FPLAY=true;clearInterval(FT);FT=setInterval(()=>flipShow(FI
 function flipInit(set){FSET=set;flipShow(0);flipStart();
   document.querySelectorAll('.fctl button').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a==='play'){FPLAY?flipStop():flipStart()}else{flipStop();flipShow(FI+(a==='next'?1:-1))}});}
 const MMTAB=`<table class="sum"><tr><th></th><th>有絲分裂</th><th>減數分裂</th></tr>
- <tr><td>發生細胞</td><td>體細胞</td><td>生殖細胞</td></tr>
+ <tr><td>發生細胞</td><td>體細胞</td><td>生殖母細胞</td></tr>
  <tr><td>染色體複製</td><td>1 次</td><td>1 次</td></tr>
  <tr><td>聯會（四分體）</td><td>無</td><td>1 次</td></tr>
  <tr><td>細胞分裂</td><td>1 次：姊妹染色分體分離</td><td>2 次：第一次同源染色體分離；第二次姊妹染色分體分離</td></tr>
@@ -694,7 +700,7 @@ const LEARN=[
    ${aniImg('s15','雙套與單套',[[56,6,'同源染色體','c3',2.0],[40,51,'雙套（2n）','c1',2.5],[40,92,'單套（n）','c2',3.0]],'border-radius:8px;overflow:hidden;max-width:360px;margin:0 auto')}</div>
   <button class="replay">▶ 重播動畫</button><div class="cap">簡報 p14（上）、p15（下）</div>`,
  txt:`<p class="quote">細胞中形狀、大小以及中節位置都相同的一對染色體，稱為同源染色體，其中一個來自父方，另一個來自母方。一個細胞的染色體如果全都兩兩成對，則稱此細胞具有雙套染色體，常以 2n 表示；……不再兩兩成對，則稱其具有單套染色體，常以 n 表示。<small>課本 P35</small></p>
- <ul><li><b class="k4">姊妹染色分體</b>：複製出來的兩條，<b>完全相同</b>，由中節相連。</li>
+ <ul><li><b class="k4">姊妹染色分體</b>：由 DNA 複製形成的一對，通常具有相同的基因序列，並由中節相連。</li>
  <li><b class="k3">同源染色體</b>：<b>一條來自父、一條來自母</b>，形狀大小相同。</li>
  <li>人類：體細胞 <b>2n＝46</b>（23 對），精子和卵 <b>n＝23</b>。</li></ul>`},
 {t:'動畫：有絲分裂',src:'簡報 p4–p11',
@@ -746,7 +752,11 @@ const LEARN=[
  <ul><li>精子：初級精母細胞（2n）→ 次級精母細胞（n）× 2 → 精細胞（n）× 4 → 精子。</li>
  <li>卵：初級卵母細胞（2n）→ 次級卵母細胞（n）＋極體 → 卵（n）＋極體。</li>
  <li>次級卵母細胞要<b>受精後</b>才完成減數分裂第二階段。</li></ul>`},
-{t:'總整理：套數變化與比較',src:'簡報 p26、p41、p44',
+{t:'細胞分化與幹細胞',src:'課本 P38–39 圖1-28；圖解簡報 p54–p58',
+  fig:()=>`<div class="diff-flow" role="img" aria-label="受精卵經有絲分裂增加細胞數，不同細胞表現特定基因後分化成神經元或上皮細胞"><div class="diff-node"><b>受精卵</b><span>相同遺傳物質</span></div><i>有絲分裂<br>增加細胞數</i><div class="diff-branches"><div class="diff-node"><b>神經元</b><span>表現特定基因</span></div><div class="diff-node"><b>上皮細胞</b><span>表現另一組基因</span></div></div></div><div class="diff-stem"><b>幹細胞</b><span>能自我更新並分化；不同種類的幹細胞，分化能力不同。</span></div>`,
+  txt:`<p class="quote">多細胞生物由受精卵發育成個體時，透過有絲分裂增加細胞數目，也透過細胞分化形成形態和功能各異的細胞。體細胞大致具有相同遺傳物質，分化差異主要來自特定基因的表現。<small>課本 P38–39</small></p><ul><li><b>有絲分裂</b>增加細胞數；<b>細胞分化</b>使細胞形成不同結構與功能。</li><li>幹細胞具有自我更新及分化能力；不同類型幹細胞可分化的細胞範圍不同。</li><li>幹細胞可補充受損組織的細胞；不能把所有幹細胞都說成能分化為所有細胞。</li></ul>`},
+
+ {t:'總整理：套數變化與比較',src:'簡報 p26、p41、p44',
  fig:()=>`<div class="ani" id="ani" style="display:grid;grid-template-columns:1fr 1.15fr;gap:8px;align-items:end">
    ${aniImg('s26','有絲分裂套數',[[50,2,'有絲分裂','c1',.1],[22,28,'複製','c5',.3],[88,15,'2n','c4',.5],[88,42,'2n','c4',.8],[88,69,'2n','c4',1.1],[88,92,'2n','c4',1.4]])}
    ${aniImg('s41','減數分裂套數',[[50,2,'減數分裂','c2',1.7],[34,29,'複製','c5',1.9],[42,46,'聯會','c3',2.2],[27,65,'減數分裂Ⅰ','c2',2.5],[16,83,'減數分裂Ⅱ','c1',2.8],[89,13,'2n','c4',2.0],[89,32,'2n','c4',2.3],[89,55,'2n','c4',2.6],[89,78,'n','c7',3.0],[89,95,'n','c7',3.3]])}</div>
@@ -837,7 +847,7 @@ const STAGES=[
  hotImg:'eHot',region:regionMeio,tag:'D5',
  steps:[{q:'找出「四分體排列在細胞中央」的那一格，點一下。',want:'P2',lbl:'四分體排中央',ok:'四分體＝一對聯會的同源染色體（4 條染色分體），只出現在減數分裂第一階段。'},
         {q:'很好！接著找出「同源染色體互相分離」的那一格。',want:'P3',lbl:'同源染色體分離',ok:'同源染色體分開後，每一條仍是由兩條姊妹染色分體組成的二分體。'},
-        {q:'最後，找出「姊妹染色分體互相分離」的那一格（上下兩列都可以）。',want:'P7',lbl:'姊妹染色分體分離',ok:''}],
+        {q:'最後，找出「姊妹染色分體互相分離」的那一格（下排減數分裂第二階段）。',want:'P7',lbl:'姊妹染色分體分離',ok:''}],
  scene:()=>`<rect width="600" height="534" fill="#fff"/>${im('eHot',0,0,600,ht('eHot',600))}`,
  miss:{P1:'這一格同源染色體正在配對（聯會），還沒排到中央。',P2:'這一格是四分體排列在細胞中央（減數分裂Ⅰ）。',P3:'這一格同源染色體正在分離——每一條仍是完整的二分體。',
    P4:'這一格第一階段結束，形成兩個單套的子細胞。',P5:'這一格是第二階段剛開始：紡錘絲再度形成。',P6:'這一格排在中央的是「二分體」，沒有配對——這是第二階段。',
@@ -894,7 +904,18 @@ const STAGES=[
    ['植物細胞的細胞質分裂，是由高基氏體的囊泡在中央融合成細胞板。',true,'D7','動物細胞則是細胞膜向內凹陷。'],
    ['你的染色體一定剛好 1/4 來自祖父、1/4 來自祖母、1/4 來自外祖父、1/4 來自外祖母。',false,'D9','非同源染色體自由組合：父親傳給你的 23 條中，來自祖父和祖母的條數不一定各半（課本 P36 腦力激盪）。']],
  why:'間期最長；神經細胞多半不再分裂；二分體算 1 個染色體；第二階段前不再複製；植物靠細胞板；非同源染色體自由組合讓每個配子的組合都不一樣。',
- refs:[R('s43','簡報 p43　兩種排列方式'),R('bs','課本 P36 腦力激盪')]}
+ refs:[R('s43','簡報 p43　兩種排列方式'),R('bs','課本 P36 腦力激盪')]},
+
+ {g:'g3',t:'細胞分化與幹細胞',sub:'課本 P38–39；圖解簡報 p54–p58。',
+  kind:'tf',q:'判斷每一句敘述：正確選 ○，錯誤選 ✕。',hint:'分清楚增加細胞數和形成不同細胞功能是兩個過程。',tag:'D10',
+  items:[['多細胞生物發育時，有絲分裂可增加細胞數目。',true,'D10','有絲分裂增加細胞數；細胞分化形成不同形態與功能。'],['成熟的神經元和上皮細胞一定具有不同的全部基因。',false,'D10','體細胞大致具有相同遺傳物質，基因表現的差異造成分化。'],['不同細胞表現不同的特定基因，是細胞分化的重要原因。',true,'D10','課本以神經元與上皮細胞說明特定基因表現差異。'],['所有種類的幹細胞都能分化成身體內的任何細胞。',false,'D10','不同幹細胞的分化潛能不同，許多只能分化成特定類型。'],['幹細胞可自我更新，並在特定訊號下分化成特定體細胞。',true,'D10','幹細胞具有較強的分裂與分化能力，可補充受損組織細胞。']],
+  why:'有絲分裂增加細胞數目，細胞分化則來自特定基因表現差異，讓細胞形成不同形態與功能。幹細胞可自我更新並分化，但不同類型的幹細胞能力不同。',refs:[]},
+
+ {g:'g3',t:'應用挑戰：套數與 DNA 含量',sub:'整合課本 P34–35 與圖解簡報題型。',
+  kind:'fill',q:'以某生物體細胞 G₁ 期的 DNA 含量為 4a，填入各階段的染色體套數與 DNA 含量。',hint:'DNA 複製使 DNA 含量加倍；減數分裂Ⅰ後套數減半，Ⅰ與Ⅱ之間不再複製。',
+  eqs:[{nm:'G₁ 期（複製前）',parts:['套數 ',{a:['2n']},'；DNA 含量 ',{a:['4a']}]},{nm:'DNA 複製後、減數分裂Ⅰ前',parts:['套數 ',{a:['2n']},'；DNA 含量 ',{a:['8a']}]},{nm:'減數分裂Ⅰ完成後',parts:['套數 ',{a:['n']},'；每個子細胞 DNA 含量 ',{a:['4a']}]},{nm:'減數分裂Ⅱ完成後',parts:['套數 ',{a:['n']},'；每個配子 DNA 含量 ',{a:['2a']}] }],
+  bank:['2n','n','4a','8a','2a','4n'],plain:true,tag:'D11',
+  why:'DNA 在減數分裂前複製一次，因此由 4a 增至 8a；此時同源染色體仍成對，套數仍是 2n。減數分裂Ⅰ分開同源染色體，形成 n、每個細胞 DNA 為 4a；減數分裂Ⅱ不再複製 DNA，分開姊妹染色分體後形成 n、DNA 為 2a 的配子。',refs:[]}
 ];
 </script>
 <script>
@@ -902,7 +923,7 @@ const el=id=>document.getElementById(id);
 const KEY='mitosisgame.v2';
 const REVEAL_N=5;   /* 答錯幾次後自動顯示答案 */
 const SOLS={"二分體與同源染色體": {"a_sis": "s1", "a_sp": "sp", "a_cen": "c1", "b_cen": "c2", "b_hom": "hom", "b_sis": "s2", "b_non": "non"}, "細胞質分裂": {"furrow": "furrow", "anim": "anim", "d1": "dA", "plant": "plant", "ves": "ves", "plate": "plate", "d2": "dB"}};
-const LEARN_FOR_STAGE = [4, 2, 6, 7, 10, 11, 11, 0];
+const LEARN_FOR_STAGE = [5, 2, 6, 7, 10, 12, 12, 0, 11, 12];
 let ST={idx:0,tries:{},tags:{},who:{n:'',c:'',s:''},t0:0,done:false,passed:{},drafts:{}};
 let place={},sel=null,answered=false,pick=new Set(),order=[],layout={};
 let seqv=[],fillv={},fillOn=null,matchv={},gridv={},tfv={},hotStep=0,hotMarks=[],optPerm=[];
