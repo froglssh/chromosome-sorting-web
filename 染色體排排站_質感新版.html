@@ -557,6 +557,115 @@ body:has(#play:not(.hidden)) .tool-btn{min-height:34px;height:34px;width:34px;fo
   margin-bottom: 16px;
 }
 
+
+/* ── 第一題（排序題）精準一視窗排版優化 ── */
+.slots{
+  display:flex!important;
+  justify-content:center!important;
+  gap:10px!important;
+  margin-block:4px 8px!important;
+  flex-wrap:nowrap!important;
+}
+.pool{
+  display:flex!important;
+  justify-content:center!important;
+  gap:10px!important;
+  margin-top:4px!important;
+  flex-wrap:nowrap!important;
+}
+.oslot, .pcard{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  aspect-ratio:260 / 338;
+  width:clamp(54px, 8.5vw, 76px)!important;
+  height:clamp(70px, 11vw, 98px)!important;
+  background:var(--surface-2);
+  border:2px dashed var(--line);
+  border-radius:8px;
+  padding:2px;
+  cursor:pointer;
+  transition:all .18s ease;
+  overflow:hidden;
+  box-sizing:border-box;
+  flex:0 0 auto!important;
+}
+.pcard{
+  background:var(--surface);
+  border:1.8px solid var(--line);
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.pcard:hover:not(:disabled){
+  border-color:var(--accent);
+  transform:translateY(-2px) scale(1.12);
+  box-shadow:0 6px 16px rgba(14,124,116,.3);
+  z-index:20;
+}
+.pcard.used{
+  opacity:.18;
+  border-style:dashed;
+  border-color:var(--line);
+  cursor:default;
+  transform:none!important;
+  box-shadow:none!important;
+  filter:grayscale(1);
+}
+.pcard img, .oslot img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:4px;
+  pointer-events:none;
+}
+#play .grid.solo .stagehead{
+  padding-bottom:2px;
+  margin-bottom:2px;
+}
+#play .grid.solo .stagehead h2{
+  font-size:20px;
+  margin:0 0 1px;
+}
+#play .grid.solo .stagehead .sub{
+  font-size:11px;
+  margin:0;
+}
+#play .grid.solo .qlabel{
+  margin-bottom:1px;
+  font-size:10px;
+}
+#play .grid.solo .q{
+  font-size:18px;
+  line-height:1.35;
+  margin-bottom:3px;
+}
+#play .grid.solo .qhint{
+  font-size:12px;
+  line-height:1.35;
+  margin-bottom:4px;
+}
+#play .grid.solo .panel{
+  padding:10px 16px!important;
+}
+#play{
+  height:calc(100dvh - var(--site-head-height) - var(--quiz-top-height) - var(--quiz-footer-height) - 24px)!important;
+  padding-top:4px!important;
+  padding-bottom:0!important;
+}
+
+@media(max-width:680px){
+  .slots, .pool{
+    display:grid!important;
+    grid-template-columns:repeat(3, 1fr)!important;
+    gap:6px!important;
+  }
+  .oslot, .pcard{
+    width:100%!important;
+    height:auto!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2136,6 +2245,40 @@ document.addEventListener('keydown',e=>{
   new MutationObserver(fit).observe(bar,{attributes:true,attributeFilter:['class']});
   window.addEventListener('resize',fit);window.addEventListener('orientationchange',function(){setTimeout(fit,300)});
   fit();
+})();
+
+</script>
+<script>
+
+/* 圖解教學卡全螢幕播放按鈕綁定 */
+(function(){
+  const stage = document.getElementById('learn-stage');
+  const trigger = document.getElementById('learn-fullscreen');
+  const prev = document.getElementById('fs-prev');
+  const next = document.getElementById('fs-next');
+  const exit = document.getElementById('fs-exit');
+
+  if (prev) prev.onclick = () => { if (typeof LI !== 'undefined' && LI > 0) showLearn(LI - 1); };
+  if (next) next.onclick = () => { if (typeof LI !== 'undefined' && typeof LEARN !== 'undefined' && LI < LEARN.length - 1) showLearn(LI + 1); };
+  if (exit) exit.onclick = () => {
+    if (typeof exitPresentation === 'function') exitPresentation();
+    else if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    const active = document.fullscreenElement === stage;
+    if (trigger) {
+      trigger.textContent = active ? '⛶ 退出全螢幕' : '⛶ 全螢幕播放';
+      trigger.setAttribute('aria-pressed', String(active));
+    }
+  });
+
+  stage.addEventListener('contextmenu', e => {
+    if (document.fullscreenElement === stage || stage.classList.contains('presentation-fallback')) {
+      e.preventDefault();
+      if (typeof LI !== 'undefined' && typeof LEARN !== 'undefined' && LI < LEARN.length - 1) showLearn(LI + 1);
+    }
+  });
 })();
 
 </script>
